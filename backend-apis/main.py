@@ -349,8 +349,11 @@ async def getNaturalResponse():
    
    user_question = envelope.get('user_question')
    user_grouping = envelope.get('user_grouping')
+   session_id = envelope.get('session_id')
+   user_id = envelope.get('user_id')
    
-   generated_sql,session_id,invalid_response = await generate_sql(user_question,
+   generated_sql,session_id,invalid_response = await generate_sql(session_id,
+                user_question,
                 user_grouping,  
                 RUN_DEBUGGER,
                 DEBUGGING_ROUNDS, 
@@ -364,19 +367,21 @@ async def getNaturalResponse():
                 table_similarity_threshold,
                 column_similarity_threshold,
                 example_similarity_threshold,
-                num_sql_matches)
+                num_sql_matches,
+                user_id=user_id)
    
    if not invalid_response:
 
         result_df,invalid_response=get_results(user_grouping,generated_sql)
         
         if not invalid_response:
-            result,invalid_response=get_response(user_question,result_df.to_json(orient='records'))
+            result,invalid_response=get_response(session_id,user_question,result_df.to_json(orient='records'))
 
             if not invalid_response:
                 responseDict = { 
                             "ResponseCode" : 200, 
                             "summary_response" : result,
+                            "SessionID" : session_id,
                             "Error":""
                             } 
 
@@ -413,8 +418,11 @@ async def getResultsResponse():
    
    user_question = envelope.get('user_question')
    user_database = envelope.get('user_database')
+   session_id = envelope.get('session_id')
+   user_id = envelope.get('user_id')
    
-   generated_sql,invalid_response = await generate_sql(user_question,
+   generated_sql,session_id,invalid_response = await generate_sql(session_id,
+                user_question,
                 user_database,  
                 RUN_DEBUGGER,
                 DEBUGGING_ROUNDS, 
@@ -428,7 +436,8 @@ async def getResultsResponse():
                 table_similarity_threshold,
                 column_similarity_threshold,
                 example_similarity_threshold,
-                num_sql_matches)
+                num_sql_matches,
+                user_id=user_id)
    
    if not invalid_response:
 
